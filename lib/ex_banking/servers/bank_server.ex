@@ -102,8 +102,8 @@ defmodule ExBanking.BankServer do
     end
   end
 
-  def init(initial_balance) do
-    {:ok, %{"balance" => initial_balance}}
+  def init(_args) do
+    {:ok, %{}}
   end
 
   def handle_call({:create_user, _user_info}, _from, user_state) do

@@ -1,16 +1,25 @@
 defmodule ExBanking do
   @moduledoc """
   ExBanking - Simple banking application  
-    - Create User
-    - Credit amount to the user account
-    - Debit amount from user account
-    - Transfer money from one account to another
-    - Retreive user account balance
+    - User Account.
+    - Deposit : Credit amount of type currency to user account.
+    - Withdraw: Debit amount of type from user account.
+    - Transfer: transfer amount of type between accounts.
+    - Retrieve: Amount of type of the user.
   """
+  @type banking_error ::
+          {:error,
+           :wrong_arguments
+           | :user_already_exists
+           | :user_does_not_exist
+           | :not_enough_money
+           | :sender_does_not_exist
+           | :receiver_does_not_exist
+           | :too_many_requests_to_user
+           | :too_many_requests_to_sender
+           | :too_many_requests_to_receiver}
 
-  @doc """
-  Create new user with minimum balance of 0.
-  """
+  @spec create_user(user :: String.t()) :: :ok | banking_error
   def create_user(user) when is_binary(user) do
     ExBanking.UserServer.create_user(user)
   end
@@ -18,9 +27,8 @@ defmodule ExBanking do
   def create_user(_user), do: {:error, :wrong_arguments}
   def create_user(), do: {:error, :wrong_arguments}
 
-  @doc """
-  Credit money to the user account.
-  """
+  @spec deposit(user :: String.t(), amount :: number, currency :: String.t()) ::
+          {:ok, new_balance :: number} | banking_error
   def deposit(user, amount, currency)
       when is_binary(user) and (is_float(amount) or is_integer(amount)) and is_binary(currency) and
              amount > 0 do
@@ -32,9 +40,8 @@ defmodule ExBanking do
   def deposit(_user), do: {:error, :wrong_arguments}
   def deposit(), do: {:error, :wrong_arguments}
 
-  @doc """
-  Debit money from the user account.
-  """
+  @spec withdraw(user :: String.t(), amount :: number, currency :: String.t()) ::
+          {:ok, new_balance :: number} | banking_error
   def withdraw(user, amount, currency)
       when is_binary(user) and (is_float(amount) or is_integer(amount)) and is_binary(currency) and
              amount > 0 do
@@ -46,9 +53,8 @@ defmodule ExBanking do
   def withdraw(_user), do: {:error, :wrong_arguments}
   def withdraw(), do: {:error, :wrong_arguments}
 
-  @doc """
-  Get the current balance of the user account.
-  """
+  @spec get_balance(user :: String.t(), currency :: String.t()) ::
+          {:ok, balance :: number} | banking_error
   def get_balance(user, currency) when is_binary(user) and is_binary(currency) do
     ExBanking.BankServer.get_balance(user, currency)
   end
@@ -57,9 +63,12 @@ defmodule ExBanking do
   def get_balance(_user), do: {:error, :wrong_arguments}
   def get_balance(), do: {:error, :wrong_arguments}
 
-  @doc """
-  Transfer money from user account to another user.
-  """
+  @spec send(
+          from_user :: String.t(),
+          to_user :: String.t(),
+          amount :: number,
+          currency :: String.t()
+        ) :: {:ok, from_user_balance :: number, to_user_balance :: number} | banking_error
   def send(from_user, to_user, amount, currency)
       when is_binary(from_user) and is_binary(to_user) and
              (is_float(amount) or is_integer(amount)) and
